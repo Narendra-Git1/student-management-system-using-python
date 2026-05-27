@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -14,7 +14,10 @@ router = APIRouter()
 
 
 # GET ALL STUDENTS
-@router.get("/students", response_model=List[StudentResponse])
+@router.get(
+    "/students",
+    response_model=List[StudentResponse]
+)
 def get_students(db: Session = Depends(get_db)):
 
     students = db.query(Student).all()
@@ -23,24 +26,35 @@ def get_students(db: Session = Depends(get_db)):
 
 
 # GET STUDENT BY ID
-@router.get("/students/{id}",
-            response_model=StudentResponse)
-def get_student(id: int,
-                db: Session = Depends(get_db)):
+@router.get(
+    "/students/{id}",
+    response_model=StudentResponse
+)
+def get_student(
+    id: int,
+    db: Session = Depends(get_db)
+):
 
     student = db.query(Student).filter(Student.id == id).first()
 
     if student is None:
-        return {"message": "Student Not Found"}
+        raise HTTPException(
+            status_code=404,
+            detail="Student Not Found"
+        )
 
     return student
 
 
 # ADD STUDENT
-@router.post("/students",
-             response_model=StudentResponse)
-def add_student(student: StudentCreate,
-                db: Session = Depends(get_db)):
+@router.post(
+    "/students",
+    response_model=StudentResponse
+)
+def add_student(
+    student: StudentCreate,
+    db: Session = Depends(get_db)
+):
 
     new_student = Student(
         name=student.name,
@@ -57,16 +71,23 @@ def add_student(student: StudentCreate,
 
 
 # UPDATE STUDENT
-@router.put("/students/{id}",
-            response_model=StudentResponse)
-def update_student(id: int,
-                   updated_student: StudentCreate,
-                   db: Session = Depends(get_db)):
+@router.put(
+    "/students/{id}",
+    response_model=StudentResponse
+)
+def update_student(
+    id: int,
+    updated_student: StudentCreate,
+    db: Session = Depends(get_db)
+):
 
     student = db.query(Student).filter(Student.id == id).first()
 
     if student is None:
-        return {"message": "Student Not Found"}
+        raise HTTPException(
+            status_code=404,
+            detail="Student Not Found"
+        )
 
     student.name = updated_student.name
     student.email = updated_student.email
@@ -81,15 +102,22 @@ def update_student(id: int,
 
 # DELETE STUDENT
 @router.delete("/students/{id}")
-def delete_student(id: int,
-                   db: Session = Depends(get_db)):
+def delete_student(
+    id: int,
+    db: Session = Depends(get_db)
+):
 
     student = db.query(Student).filter(Student.id == id).first()
 
     if student is None:
-        return {"message": "Student Not Found"}
+        raise HTTPException(
+            status_code=404,
+            detail="Student Not Found"
+        )
 
     db.delete(student)
     db.commit()
 
-    return {"message": "Student Deleted Successfully"}
+    return {
+        "message": "Student Deleted Successfully"
+    }
