@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth.auth_handler import hash_password
+
 from app.models.student import Student
 from app.schemas.student_schema import StudentCreate
 
@@ -34,7 +36,8 @@ def create_student(student: StudentCreate, db: Session):
         name=student.name,
         email=student.email,
         course=student.course,
-        city=student.city
+        city=student.city,
+        password=hash_password(student.password)
     )
 
     db.add(new_student)
@@ -63,6 +66,9 @@ def update_student_service(
     student.email = updated_student.email
     student.course = updated_student.course
     student.city = updated_student.city
+    student.password = hash_password(
+        updated_student.password
+    )
 
     db.commit()
     db.refresh(student)

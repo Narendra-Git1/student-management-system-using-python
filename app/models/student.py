@@ -10,3 +10,4 @@ class Student(Base):
     email = Column(String(100))
     course = Column(String(100))
     city = Column(String(100))
+    password = Column(String(255))

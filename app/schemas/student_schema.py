@@ -1,15 +1,16 @@
 from pydantic import BaseModel
 
 
-# Request Schema
+# REQUEST SCHEMA
 class StudentCreate(BaseModel):
     name: str
     email: str
     course: str
     city: str
+    password: str
 
 
-# Response Schema
+# RESPONSE SCHEMA
 class StudentResponse(BaseModel):
     id: int
     name: str
