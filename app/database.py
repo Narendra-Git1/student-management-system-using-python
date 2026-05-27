@@ -12,3 +12,15 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
+
+# Dependency Injection Function
+def get_db():
+
+    db = SessionLocal()
+
+    try:
+        yield db
+
+    finally:
+        db.close()

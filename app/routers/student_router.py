@@ -1,18 +1,21 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from typing import List
 
-from app.schemas.student_schema import StudentCreate
+from app.schemas.student_schema import (
+    StudentCreate,
+    StudentResponse
+)
+
 from app.models.student import Student
-from app.database import SessionLocal
+from app.database import get_db
 
 router = APIRouter()
 
-db = SessionLocal()
-
 
 # GET ALL STUDENTS
-@router.get("/students")
-def get_students():
+@router.get("/students", response_model=List[StudentResponse])
+def get_students(db: Session = Depends(get_db)):
 
     students = db.query(Student).all()
 
@@ -20,8 +23,10 @@ def get_students():
 
 
 # GET STUDENT BY ID
-@router.get("/students/{id}")
-def get_student(id: int):
+@router.get("/students/{id}",
+            response_model=StudentResponse)
+def get_student(id: int,
+                db: Session = Depends(get_db)):
 
     student = db.query(Student).filter(Student.id == id).first()
 
@@ -32,8 +37,10 @@ def get_student(id: int):
 
 
 # ADD STUDENT
-@router.post("/students")
-def add_student(student: StudentCreate):
+@router.post("/students",
+             response_model=StudentResponse)
+def add_student(student: StudentCreate,
+                db: Session = Depends(get_db)):
 
     new_student = Student(
         name=student.name,
@@ -46,15 +53,15 @@ def add_student(student: StudentCreate):
     db.commit()
     db.refresh(new_student)
 
-    return {
-        "message": "Student Added Successfully",
-        "student": new_student
-    }
+    return new_student
 
 
 # UPDATE STUDENT
-@router.put("/students/{id}")
-def update_student(id: int, updated_student: StudentCreate):
+@router.put("/students/{id}",
+            response_model=StudentResponse)
+def update_student(id: int,
+                   updated_student: StudentCreate,
+                   db: Session = Depends(get_db)):
 
     student = db.query(Student).filter(Student.id == id).first()
 
@@ -69,15 +76,13 @@ def update_student(id: int, updated_student: StudentCreate):
     db.commit()
     db.refresh(student)
 
-    return {
-        "message": "Student Updated Successfully",
-        "student": student
-    }
+    return student
 
 
 # DELETE STUDENT
 @router.delete("/students/{id}")
-def delete_student(id: int):
+def delete_student(id: int,
+                   db: Session = Depends(get_db)):
 
     student = db.query(Student).filter(Student.id == id).first()
 
